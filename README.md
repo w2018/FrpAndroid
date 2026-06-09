@@ -2,7 +2,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-w2018/FrpAndroid-blue?logo=github)](https://github.com/w2018/FrpAndroid)
 
-**FRP 穿透** 是一款 Android 平台上的 [frp](https://github.com/fatedier/frp) 内网穿透客户端，集成 frpc 原生二进制，提供图形化配置管理、服务监控、内置 HTTP 文件服务器等功能。
+**FRP 穿透** 是一款 Android 平台上的 [frp](https://github.com/fatedier/frp) 内网穿透客户端，集成 frpc v0.68.0 原生二进制，提供图形化配置管理、服务监控、内置 HTTP 文件服务器等功能。
 
 > 本项目基于 [fatedier/frp](https://github.com/fatedier/frp) 构建，仅供测试学习使用，禁止用于非法用途。
 
