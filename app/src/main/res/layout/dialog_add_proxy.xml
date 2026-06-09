@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加代理"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 名称 * -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="名称 *"
+            app:helperText="给代理起个名字，如 ssh、web"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 协议类型 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="协议类型 *"
+                android:textSize="12sp"
+                android:textColor="#C62828" />
+            <Spinner
+                android:id="@+id/dialog_sp_type"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="2dp"
+                android:background="@drawable/bg_spinner"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp" />
+        </LinearLayout>
+
+        <!-- 类型说明（中文） -->
+        <TextView
+            android:id="@+id/dialog_tv_type_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TCP：将本地 TCP 服务映射到公网端口，适合 SSH、数据库等"
+            android:textSize="12sp"
+            android:textColor="@color/on_surface_variant"
+            android:padding="8dp"
+            android:background="#F0F4F8"
+            android:layout_marginBottom="8dp" />
+
+        <!-- localIP -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_local_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="localIP"
+            app:helperText="本地服务 IP，默认 127.0.0.1"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_local_ip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:text="127.0.0.1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- localPort * -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_local_port"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="localPort *"
+            app:helperText="本地服务的端口号，必填"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_local_port"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- remotePort * (tcp/udp) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_remote_port"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="remotePort *"
+            app:helperText="公网访问端口，tcp/udp 必填；需 frps 防火墙放行"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_remote_port"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- customDomains * (http/https/tcpmux) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_domains"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="customDomains *"
+            app:helperText="绑定域名，多个用逗号分隔，如 app.example.com,api.example.com"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_domains"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- subdomain -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_subdomain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="subdomain"
+            app:helperText="子域名，填 myapp 则访问 myapp.你的frps域名.com"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_subdomain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- secretKey * (stcp/sudp/xtcp) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_secret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="secretKey *"
+            app:helperText="安全密钥，两端必须填一样，不能泄露"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_secret"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textVisiblePassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- httpUser -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_http_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="httpUser"
+            app:helperText="HTTP 基本认证用户名，可选"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_http_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- httpPassword -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_http_pass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="httpPassword"
+            app:helperText="HTTP 基本认证密码，可选"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_http_pass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- hostHeaderRewrite -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_host_rewrite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="hostHeaderRewrite"
+            app:helperText="把请求的 Host 头改写为指定值再发给本地服务"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_host_rewrite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- locations -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_locations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="locations"
+            app:helperText="URL 路径前缀，按路径分流，多个逗号分隔如 /, /api"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_locations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 高级选项分隔 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="- 高级选项（通用，任何类型都可选） -"
+            android:textAlignment="center"
+            android:textColor="@color/outline"
+            android:textSize="12sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 加密 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="启用传输加密"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/dialog_sw_encrypt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="对传输内容加密，防止中间人窥探"
+            android:textSize="11sp"
+            android:textColor="@color/on_surface_variant"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 压缩 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="启用数据压缩"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/dialog_sw_compress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="压缩传输数据，节省带宽，会略增加 CPU 开销"
+            android:textSize="11sp"
+            android:textColor="@color/on_surface_variant"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 带宽 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_bandwidth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="bandwidthLimit"
+            app:helperText="限制单代理带宽，如 1MB、512KB"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_bandwidth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 健康检查 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="启用健康检查"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/dialog_sw_health"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="定期检查本地服务是否存活，失败后自动摘除"
+            android:textSize="11sp"
+            android:textColor="@color/on_surface_variant"
+            android:layout_marginBottom="4dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialog_til_health_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="healthCheck.type"
+            app:helperText="tcp=连接检测，http=请求指定路径检测"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialog_et_health_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:text="tcp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</ScrollView>

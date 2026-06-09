@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FRP 穿透</string>
+    <string name="status_running">运行中</string>
+    <string name="status_stopped">已停止</string>
+    <string name="btn_start">启动</string>
+    <string name="btn_stop">停止</string>
+    <string name="label_server_addr">服务器地址</string>
+    <string name="label_server_port">端口</string>
+    <string name="label_token">认证令牌</string>
+    <string name="proxy_list">代理列表</string>
+    <string name="hint_name">名称</string>
+    <string name="hint_type">类型 (tcp/udp/http)</string>
+    <string name="hint_local_port">本地端口</string>
+    <string name="hint_remote_port">远程端口</string>
+    <string name="label_log">运行日志</string>
+    <string name="config_saved">配置已保存</string>
+    <string name="add_proxy">添加代理</string>
+    <string name="action_settings">设置</string>
+    <string name="config_history">配置历史</string>
+    <string name="load_config">加载</string>
+    <string name="delete_config">删除</string>
+    <string name="clear_log">清空日志</string>
+    <string name="battery_optimization">电池优化</string>
+    <string name="battery_opt_desc">关闭电池优化以保证 frpc 长期后台运行</string>
+    <string name="go_setting">去设置</string>
+    <string name="about">关于</string>
+    <string name="frp_version">frp 版本: v0.68.0</string>
+    <string name="app_version">应用版本: 2.0.0</string>
+    <string name="running_proxies">代理: %d 个</string>
+    <string name="notification_channel_name">FRP 服务</string>
+    <string name="notification_channel_desc">FRP 客户端前台服务</string>
+</resources>
