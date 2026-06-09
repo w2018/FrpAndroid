@@ -7,6 +7,12 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,16 +36,11 @@ jobs:
       - name: Build Release APK with R8
         run: ./gradlew assembleRelease
 
-      - name: Sign APK
-        run: |
-          echo "Signing skipped – no keystore in CI."
-          echo "APK available at: app/build/outputs/apk/release/app-release-unsigned.apk"
-
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-unsigned
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
 
   release:
     needs: build
@@ -55,6 +56,5 @@ jobs:
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            app-release-unsigned.apk
+          files: app-release-unsigned.apk
           generate_release_notes: true
