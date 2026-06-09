@@ -184,9 +184,18 @@ public class AboutFragment extends Fragment {
         });
 
         // Usage stats permission
-        com.google.android.material.button.MaterialButton btnGrantUsage = view.findViewById(R.id.btn_grant_usage);
-        if (btnGrantUsage != null) {
-            btnGrantUsage.setOnClickListener(v -> {
+        com.google.android.material.button.MaterialButton btnResetDaily = view.findViewById(R.id.btn_reset_daily);
+        if (btnResetDaily != null) {
+            btnResetDaily.setOnClickListener(v -> {
+                configManager.resetDailyStats();
+                updateDailyStats();
+                Snackbar.make(requireView(), "今日统计已重置", Snackbar.LENGTH_SHORT).show();
+            });
+        }
+
+        com.google.android.material.button.MaterialButton btnUsagePerm = view.findViewById(R.id.btn_usage_perm);
+        if (btnUsagePerm != null) {
+            btnUsagePerm.setOnClickListener(v -> {
                 Intent intent = new Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 startActivity(intent);
             });

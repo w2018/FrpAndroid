@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import androidx.core.app.NotificationCompat;
 
+import android.net.TrafficStats;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,8 +22,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import android.net.TrafficStats;
 
 public class FrpcService extends Service {
 
@@ -233,25 +233,65 @@ public class FrpcService extends Service {
         final int uid = android.os.Process.myUid();
         trafficThread = new Thread(() -> {
             ConfigManager cfg = new ConfigManager(FrpcService.this);
-            long totalRx = cfg.getTrafficTotalIn();
-            long totalTx = cfg.getTrafficTotalOut();
-
-            long prevRx = TrafficStats.getUidRxBytes(uid);
-            long prevTx = TrafficStats.getUidTxBytes(uid);
-            if (prevRx == TrafficStats.UNSUPPORTED || prevTx == TrafficStats.UNSUPPORTED) {
-                log("流量统计: 本设备不支持 TrafficStats");
-                return;
-            }
+            long prevRx = 0, prevTx = 0;
 
             while (!Thread.interrupted()) {
                 try {
+                    Thread.sleep(3000);
+
                     long curRx = TrafficStats.getUidRxBytes(uid);
                     long curTx = TrafficStats.getUidTxBytes(uid);
+
+                    // If UNSUPPORTED, try NetworkStatsManager as fallback
+                    if (curRx == TrafficStats.UNSUPPORTED || curTx == TrafficStats.UNSUPPORTED) {
+                        long[] ns = fetchNetworkStats(uid);
+                        if (ns != null) {
+                            long totalRx = cfg.getTrafficTotalIn();
+                            long totalTx = cfg.getTrafficTotalOut();
+                            if (prevRx > 0 && ns[0] >= prevRx) {
+                                long dIn = ns[0] - prevRx;
+                                long dOut = ns[1] - prevTx;
+                                if (dIn > 0) totalRx += dIn;
+                                if (dOut > 0) totalTx += dOut;
+                                if (dIn > 0 || dOut > 0) {
+                                    cfg.addDailyTraffic(Math.max(0, dIn), Math.max(0, dOut));
+                                }
+                            }
+                            // First poll: just establish baseline
+                            prevRx = ns[0];
+                            prevTx = ns[1];
+                            lastTrafficIn = totalRx;
+                            lastTrafficOut = totalTx;
+                            cfg.saveTrafficStats(totalRx, totalTx);
+                            final long fRx = totalRx, fTx = totalTx;
+                            mainHandler.post(() -> {
+                                if (trafficCallback != null) trafficCallback.onTrafficUpdate(fRx, fTx);
+                            });
+                        }
+                        continue;
+                    }
+
+                    // Normal TrafficStats approach (delta accumulation)
+                    long totalRx = cfg.getTrafficTotalIn();
+                    long totalTx = cfg.getTrafficTotalOut();
+
                     long deltaRx = 0, deltaTx = 0;
-                    if (curRx >= prevRx) deltaRx = curRx - prevRx;
-                    if (curTx >= prevTx) deltaTx = curTx - prevTx;
-                    totalRx += deltaRx;
-                    totalTx += deltaTx;
+
+                    if (prevRx > 0 && curRx >= prevRx) {
+                        deltaRx = curRx - prevRx;
+                    }
+                    if (prevTx > 0 && curTx >= prevTx) {
+                        deltaTx = curTx - prevTx;
+                    }
+
+                    // First poll: just establish baseline, don't add to cumulative
+                    if (prevRx > 0) {
+                        if (deltaRx > 0) totalRx += deltaRx;
+                        if (deltaTx > 0) totalTx += deltaTx;
+                        if (deltaRx > 0 || deltaTx > 0) {
+                            cfg.addDailyTraffic(deltaRx, deltaTx);
+                        }
+                    }
                     prevRx = curRx;
                     prevTx = curTx;
 
@@ -259,21 +299,57 @@ public class FrpcService extends Service {
                     lastTrafficOut = totalTx;
                     cfg.saveTrafficStats(totalRx, totalTx);
 
-                    // Add to daily traffic stats
-                    if (deltaRx > 0 || deltaTx > 0) {
-                        cfg.addDailyTraffic(deltaRx, deltaTx);
-                    }
-
-                    final long fRx = totalRx;
-                    final long fTx = totalTx;
+                    final long fRx = totalRx, fTx = totalTx;
                     mainHandler.post(() -> {
                         if (trafficCallback != null) trafficCallback.onTrafficUpdate(fRx, fTx);
                     });
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) { break; }
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         });
         trafficThread.start();
+    }
+
+    private long[] fetchNetworkStats(int uid) {
+        try {
+            android.app.usage.NetworkStatsManager nsm = (android.app.usage.NetworkStatsManager)
+                    getSystemService(NETWORK_STATS_SERVICE);
+            if (nsm == null) return null;
+
+            long now = System.currentTimeMillis();
+            // Query from a fixed anchor point to get semi-cumulative values
+            // Use a long window (10 min) so delta between polls works
+            long start = now - 600000;
+            long totalRx = 0, totalTx = 0;
+            android.app.usage.NetworkStats.Bucket bucket = new android.app.usage.NetworkStats.Bucket();
+
+            try (android.app.usage.NetworkStats wifiStats = nsm.queryDetailsForUid(1, null, start, now, uid)) {
+                if (wifiStats != null) {
+                    while (wifiStats.hasNextBucket()) {
+                        wifiStats.getNextBucket(bucket);
+                        totalRx += bucket.getRxBytes();
+                        totalTx += bucket.getTxBytes();
+                    }
+                }
+            }
+
+            try (android.app.usage.NetworkStats mobileStats = nsm.queryDetailsForUid(0, null, start, now, uid)) {
+                if (mobileStats != null) {
+                    while (mobileStats.hasNextBucket()) {
+                        mobileStats.getNextBucket(bucket);
+                        totalRx += bucket.getRxBytes();
+                        totalTx += bucket.getTxBytes();
+                    }
+                }
+            }
+
+            return new long[]{totalRx, totalTx};
+        } catch (SecurityException e) {
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void stopTrafficPolling() {
@@ -417,13 +493,28 @@ public class FrpcService extends Service {
             boolean isErr = false;
             if (line.startsWith("[ERR] ")) { body = line.substring(6); isErr = true; }
 
-            if (!isErr && body.contains("] start proxy success")) {
-                int end = body.indexOf("]");
-                if (end > 0) proxyStatusCallback(body.substring(1, end).trim(), ProxyItem.STATUS_SUCCESS);
+            // Match: "[代理名] start proxy success"
+            if (body.contains("] start proxy success")) {
+                // Walk backwards from "]" before " start proxy success" to find "["
+                int successIdx = body.indexOf("] start proxy success");
+                int bracketStart = body.lastIndexOf("[", successIdx);
+                if (bracketStart >= 0 && successIdx > bracketStart) {
+                    String proxyName = body.substring(bracketStart + 1, successIdx).trim();
+                    if (!proxyName.isEmpty()) {
+                        proxyStatusCallback(proxyName, ProxyItem.STATUS_SUCCESS);
+                    }
+                }
             }
+            // Match: "[代理名] start error: ..."
             if (body.contains("] start error")) {
-                int end = body.indexOf("]");
-                if (end > 0) proxyStatusCallback(body.substring(1, end).trim(), ProxyItem.STATUS_FAIL);
+                int errorIdx = body.indexOf("] start error");
+                int bracketStart = body.lastIndexOf("[", errorIdx);
+                if (bracketStart >= 0 && errorIdx > bracketStart) {
+                    String proxyName = body.substring(bracketStart + 1, errorIdx).trim();
+                    if (!proxyName.isEmpty()) {
+                        proxyStatusCallback(proxyName, ProxyItem.STATUS_FAIL);
+                    }
+                }
             }
         }
         mainHandler.post(() -> { if (callback != null) callback.onLog(line); });

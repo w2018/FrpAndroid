@@ -272,6 +272,13 @@ public class ConfigManager {
             .apply();
     }
 
+    public void resetDailyStats() {
+        prefs.edit()
+            .putLong(KEY_DAILY_TRAFFIC_IN, 0)
+            .putLong(KEY_DAILY_TRAFFIC_OUT, 0)
+            .apply();
+    }
+
     // ---- HTTP server config ----
 
     public void saveHttpConfig(int port, String root, int bindMode) {
