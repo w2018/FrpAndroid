@@ -822,6 +822,11 @@ public class ConfigFragment extends Fragment {
             prvFrpStatus.startPulse();
         } else {
             prvFrpStatus.stopPulse();
+            // Reset all proxy statuses to UNKNOWN when service stops
+            for (ProxyItem p : proxyList) {
+                p.setStatus(ProxyItem.STATUS_UNKNOWN);
+            }
+            proxyAdapter.notifyDataSetChanged();
         }
     }
 

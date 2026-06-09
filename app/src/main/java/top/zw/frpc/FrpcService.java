@@ -210,7 +210,9 @@ public class FrpcService extends Service {
     private void stopServiceAndCleanup() {
         running = false;
         serviceStartTime = 0;
-        new ConfigManager(this).setRunning(false);
+        ConfigManager cfg = new ConfigManager(this);
+        cfg.setRunning(false);
+        cfg.clearAllProxyStatus();
         notifyServiceStatus(false);
         stopTrafficPolling();
         if (frpcProcess != null) {
@@ -577,7 +579,9 @@ public class FrpcService extends Service {
     public void onDestroy() {
         running = false;
         serviceStartTime = 0;
-        new ConfigManager(this).setRunning(false);
+        ConfigManager destroyCfg = new ConfigManager(this);
+        destroyCfg.setRunning(false);
+        destroyCfg.clearAllProxyStatus();
         notifyServiceStatus(false);
         if (frpcProcess != null) { frpcProcess.destroy(); frpcProcess = null; }
         stopTrafficPolling();
