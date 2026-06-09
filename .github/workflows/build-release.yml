@@ -36,11 +36,45 @@ jobs:
       - name: Build Release APK with R8
         run: ./gradlew assembleRelease
 
+      - name: Sign APK with debug keystore
+        run: |
+          # Locate build-tools for apksigner
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          if [ ! -d "$BUILD_TOOLS" ]; then
+            BUILD_TOOLS=$(ls -d "$ANDROID_HOME/build-tools/"*/ | head -1)
+          fi
+          UNSIGNED="app/build/outputs/apk/release/app-release-unsigned.apk"
+          ALIGNED="${UNSIGNED/-unsigned/-aligned}"
+          SIGNED="${UNSIGNED/-unsigned/}"
+
+          # Create debug keystore if not exists
+          KEYSTORE="$HOME/.android/debug.keystore"
+          if [ ! -f "$KEYSTORE" ]; then
+            keytool -genkey -v -keystore "$KEYSTORE" \
+              -alias androiddebugkey -keyalg RSA -keysize 2048 \
+              -validity 10000 \
+              -storepass android -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+          # Zip align
+          "$BUILD_TOOLS/zipalign" -v -p 4 "$UNSIGNED" "$ALIGNED"
+
+          # Sign
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-key-alias androiddebugkey \
+            --ks-pass pass:android \
+            --key-pass pass:android \
+            --out "$SIGNED" "$ALIGNED"
+
+          echo "Signed APK: $SIGNED"
+
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-unsigned
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
 
   release:
     needs: build
@@ -51,10 +85,10 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-release-unsigned
+          name: app-release
 
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v2
         with:
-          files: app-release-unsigned.apk
+          files: app-release.apk
           generate_release_notes: true
